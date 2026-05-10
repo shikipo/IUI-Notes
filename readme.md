@@ -419,4 +419,24 @@ _Skipping the 1st diamond → risk of solving the wrong problem entirely._
 
 </details>
 
-[Idea for project](https://claude.ai/chat/5c1525d5-3b4f-4785-a32f-807746e8172b)
+## [Idea for project](https://claude.ai/chat/5c1525d5-3b4f-4785-a32f-807746e8172b)
+
+Adapting Reading Assistant with Eye-Tracking:
+
+The idea is a web-based reading tool for language learners.  
+**How it works:** user open a text in browser and reads it. The system tracks their eye movement via webcam using WebGazer.js (AI-powered open-source library whiten in JavaScript), and if it detects that the user is too slow or reads the same line multiple times, it offers help (translation or explanation of difficult words).
+
+**AI/ML methods:**
+- Input: eye-tracking data
+  - **Regression** (WebGaser.js uses regression to predict gaze position from webcam data)
+  - **User modelling** (every user has a different reading speed and level of language, so before starting to use the system, it could ask the user to read a sample text and use that data to calibrate the model for that user)
+- Output: providing help via API (not AI-generated )
+
+**Notes:**
+- Key achievement (выбрать один для UI, один технический): ...
+- Approaches: problem-driven (start with user problem of struggling to read) + tech-driven (eye-tracking enables new interaction)
+- User Personas (what is their main goal (goals)): ...
+- How might we might help the language learners understand unfamiliar words while learning, without interrupting their natural reading flow?
+- Scenario & Storyboard (как комикс определенного user flow): ...
+- Paper prototype (черно-белый макет UI): ...
+- UIU Aspects + presentation: ...
