@@ -274,6 +274,20 @@ graph LR
 
 > Reflect on software, apps, devices that you use: Which might have an IUI? How do you benefit from it (or not)?
 
+**A:** Examples from students: **YouTube** — recommender system surfaces new videos matching taste, but creates filter bubbles and can waste time. **Google Maps** — traffic prediction makes navigation faster, though not always the optimal route. **Smartphone keyboard** — word prediction saves typing, but wrong predictions cause errors. **Mac file explorer** — recent files shortcut helps, but breaks muscle memory and disappears after time — raises the question: should UIs be predictable rather than adaptive?
+
+> Explain three principle areas of AI in IUIs, with a concrete example application for each.
+
+**A:** **Analysis of Input** — AI interprets what the user provides (e.g. fingerprint unlock). **Modeling** — AI builds a model of the user/situation and adapts accordingly (e.g. keyboard predicting intended tap position). **Generation** — AI plans and produces output for the user (e.g. Gmail Smart Reply generating auto-replies).
+
+> What does AI (e.g. a recommendation system) achieve for users in the UI of a movie streaming platform?
+
+**A:** AI personalises the homepage based on watch history and preferences — different users see different content. Users find relevant movies faster, spend less time searching, and are more likely to stay engaged. Result: the app feels tailored to each individual from the moment they open it.
+
+> Explain the differences between tool-style and agent-style UIs, and how IUIs relate to this distinction.
+
+**A:** **Tool-style** — user has full initiative, applies actions step by step via direct manipulation (e.g. Photoshop). **Agent-style** — user delegates tasks to the system, which acts with autonomy and hides the process (e.g. Alexa). IUIs often sit between the two: they use AI to adapt or automate parts of the interaction, making them **mixed-initiative** systems — neither purely tool nor purely agent.
+
 ## 2.[Intro AI & HCI](./lecture/iui_lecture_02_intro_ai_hci.pdf)
 
 <details><summary>Goals of AI</summary>
@@ -419,24 +433,808 @@ _Skipping the 1st diamond → risk of solving the wrong problem entirely._
 
 </details>
 
-## [Idea for project](https://claude.ai/chat/5c1525d5-3b4f-4785-a32f-807746e8172b)
+### Exam Questions
 
-Adapting Reading Assistant with Eye-Tracking:
+> Explain the two goals of AI, and for each give an example of an interactive system. Also describe which ML/AI tasks appear in your example.
 
-The idea is a web-based reading tool for language learners.  
-**How it works:** user open a text in browser and reads it. The system tracks their eye movement via webcam using WebGazer.js (AI-powered open-source library whiten in JavaScript), and if it detects that the user is too slow or reads the same line multiple times, it offers help (translation or explanation of difficult words).
+**A:** **Emulation goal** — understand and reproduce human abilities (e.g. a voice assistant mimicking conversation → speech recognition + NLU). **Application goal** — apply AI to build useful products (e.g. Google Maps traffic prediction → regression for travel time, recommendation for route). Note: the same method (e.g. LLM) can serve either goal depending on what it's used for.
 
-**AI/ML methods:**
-- Input: eye-tracking data
-  - **Regression** (WebGaser.js uses regression to predict gaze position from webcam data)
-  - **User modelling** (every user has a different reading speed and level of language, so before starting to use the system, it could ask the user to read a sample text and use that data to calibrate the model for that user)
-- Output: providing help via API (not AI-generated )
+> List three AI methods and give examples of what you could do with them for IUIs.
 
-**Notes:**
-- Key achievement (выбрать один для UI, один технический): ...
-- Approaches: problem-driven (start with user problem of struggling to read) + tech-driven (eye-tracking enables new interaction)
-- User Personas (what is their main goal (goals)): ...
-- How might we might help the language learners understand unfamiliar words while learning, without interrupting their natural reading flow?
-- Scenario & Storyboard (как комикс определенного user flow): ...
-- Paper prototype (черно-белый макет UI): ...
-- UIU Aspects + presentation: ...
+**A:** **Classification** — adapt phone behaviour (near ear → quieter; facing user → speaker mode). **Recommendation system** — show relevant content (Netflix, news feed). **NLP** — understand language input for a chatbot. **Reinforcement learning** — gradually optimise UI layout based on what users click. **Generative model / LLM** — summarise long content or adjust text contextually. **Clustering** — group similar files or photos into folders.
+
+> Reflect on software you use — which features might use classification, regression, or clustering?
+
+**A:** **YouTube** homepage — clustering (topic groups) + classification (category labels). **Photo gallery** — face detection → clustering into person-specific albums. **Netflix/YouTube** — recommendation systems personalise the feed. **Touchscreen keyboard** — regression predicts touch position, improving accuracy. **Google Maps** arrival time — regression (continuous value: minutes). **Email spam filter** — classification.
+
+> Design an intelligent museum app that shows info about objects in the camera view. What data and AI does it need?
+
+**A:** Needs: image data of all exhibits from multiple angles + live camera feed. AI uses **image classification / similarity search** to recognise the exhibit in view. User taps the object → detail popup appears. Optional: "Ask tour guide" button opens a chatbot (LLM) with deeper knowledge about the exhibit.
+
+> How would you improve the layout of a news website based on user interests? What data and AI would you use?
+
+**A:** Collect data on which articles users click and how long they stay (implicit feedback). Use **clustering** to group articles matching similar interest patterns, and **recommendation system** to personalise the homepage layout. Explicit feedback (rating articles) can also be added to improve accuracy over time.
+
+## 3.[Recommendation Systems](./lecture/iui_lecture_03_rec_sys.pdf)
+
+<details><summary>Why recommendations? Motivation</summary>
+
+**Pragmatic:** Recommendations are very common in end-user apps — sometimes they *are* the whole UI (e.g. Netflix homepage, YouTube feed).
+
+**Conceptual:** Information overload — the gap between what is available and what humans can actually process (limited by attention, cognitive resources, time). Recommenders help bridge this gap.
+
+| Context | Example |
+|---------|---------|
+| Everyday | Netflix, YouTube, Spotify, Amazon |
+| High-stakes | Diversion decision support for pilots (which airport to land at in an emergency) |
+
+</details>
+
+<details><summary>Algorithms — content-based filtering (item vectors + cosine similarity), collaborative filtering (user-based и item-based), mermaid-схема</summary>
+
+### Content-based filtering
+
+**Idea:** "Item X is similar to what you liked before" — based on item features.
+
+1. Define a list of features relevant to describe items (e.g. language, genre, time period)
+2. Represent each item as a numerical vector of those feature values
+3. Build a user model as a vector with the same features (e.g. how much the user likes "thriller")
+4. Recommend items whose vector is most similar to the user vector (e.g. cosine similarity)
+
+---
+
+### Collaborative filtering (CF)
+
+**Idea:** "People who liked what you liked also liked item X" — no knowledge of item content needed.
+
+| Variant | How similarity is computed | What is recommended |
+|---------|---------------------------|---------------------|
+| **User-based** | Similarity between users based on their ratings | Items that similar users liked |
+| **Item-based** | Similarity between items based on user ratings | Items similar to ones the user already liked |
+
+> **Key property of CF:** We don't need any information about the actual content of items (e.g. book genre) to assess similarity — only ratings/interactions.
+
+**Computation steps (user-based CF):**
+1. Build a user–item rating matrix
+2. Calculate similarity between users (e.g. cosine similarity → similarity matrix)
+3. Multiply rating matrix by similarity weights → weighted rating matrix
+4. Sum weighted ratings per item ÷ sum of similarities → predicted score → recommend top items
+
+---
+
+### Overview
+
+```mermaid
+graph TD
+    A[Recommendation approaches]
+    A --> B["Content-based filtering<br/>Item features + user profile"]
+    A --> C["Collaborative filtering<br/>User ratings only"]
+    C --> D["User-based CF<br/>Find similar users"]
+    C --> E["Item-based CF<br/>Find similar items"]
+```
+
+</details>
+
+<details><summary>UI Design — presentation, 4 типа integration, quantity (Hick's Law, carousel/endless scroll/"more"), detail (3 уровня)</summary>
+
+### Presentation
+
+Not all UIs label items explicitly as "recommendations" — some just show them (e.g. YouTube homepage shows videos without a "recommended" label on every card).
+
+**Design question:** Should the UI explicitly signal that an item is a recommendation? Why or why not?
+
+---
+
+### Integration
+
+| Type | Description | Example |
+|------|-------------|---------|
+| **Main view** | Recommendations shown directly in the primary content area | "Similar items" below a product on Amazon |
+| **Sidebar / context element** | Recommendations as a secondary panel next to main content | "You might also like" sidebar |
+| **Temporal** | Next recommendation plays/appears automatically after current one | YouTube autoplay |
+| **Task integration** | Recommendations appear inside the main task itself | Search query suggestions |
+
+---
+
+### Quantity — how many to show?
+
+| Too few | Too many |
+|---------|----------|
+| Risks missing relevant options | Potentially overwhelming |
+| User may feel constrained | Increases decision time (Hick's Law) |
+| | May crowd out other UI features |
+
+**Hick's Law:** increasing the number of choices will increase decision time logarithmically.
+
+**UI patterns for "more":**
+
+| Pattern | How it works |
+|---------|-------------|
+| **Carousel** | Horizontal scroll; half-cut content signals there's more |
+| **"More" button** | User explicitly requests more items |
+| **Endless scroll** | User implicitly triggers more items by scrolling |
+
+---
+
+### Detail — how much info per item?
+
+| Level | Description | Example |
+|-------|-------------|---------|
+| **Key visual only** | Just a thumbnail | Movie poster grid on Netflix |
+| **Visual + text** | Thumbnail + title (+ metadata) | YouTube thumbnail + title + channel |
+| **Details on demand** | Basic view + hover/tap for more | Product card that expands on hover |
+
+> **Design balance:** too little → can't distinguish options; too much → overwhelming and slow.
+
+</details>
+
+<details><summary>Interaction design — explicit/implicit feedback, functional interactions (keep & export, manipulate)</summary>
+
+### Feedback interactions
+
+| Type | Description | Example |
+|------|-------------|---------|
+| **Explicit feedback** | Primary purpose is giving direct feedback to the system | Like/dislike buttons, star rating, thumbs up/down |
+| **Other interactions** | Explicit user actions, but not direct rec. feedback | Share, comment, bookmark |
+| **Behaviour signals** | Feedback inferred from behaviour — implicit | Reading/viewing time, scroll depth, mouse movements, revisits |
+
+---
+
+### Functional interactions
+
+| Type | Description | Example |
+|------|-------------|---------|
+| **Keep & export** | Save or move material beyond the recommendation context | Pin, bookmark, "Add to playlist", share |
+| **Manipulate** | Work with recommendations within the app | Dismiss, compare, re-rank, refine, change settings, use as new query |
+
+</details>
+
+<details><summary>Algorithm meets UI — cold-start (3 случая + 3 решения), onboarding tradeoff, precision vs recall, exploitation vs exploration (3 UI-паттерна)</summary>
+
+### Cold-start problem
+
+Recommendations need initial data — but what if there is none?
+
+| Case | Problem |
+|------|---------|
+| **New user** | No ratings or interactions yet |
+| **New item** | Not rated by anyone yet |
+| **New system** | Just created, no info on users or items |
+
+**Solutions:**
+
+| Solution | Description |
+|----------|-------------|
+| **Hybrid approach** | Start with content-based filtering; shift to CF once enough ratings exist |
+| **Background info** | Use demographics, location, social context to bootstrap |
+| **Onboarding UI** | Ask user explicitly (questionnaire, interest selection) |
+
+**Onboarding tradeoff:**
+
+> More info asked upfront → better initial recommendations, but more user effort and delay before getting to the app.
+> Design goal: minimise friction while maximising initial recommendation quality.
+
+---
+
+### Precision vs Recall
+
+| Metric | Question it answers |
+|--------|---------------------|
+| **Precision** | What fraction of shown recommendations is actually relevant? |
+| **Recall** | What fraction of all relevant items did we actually show? |
+
+**When to favour which:**
+
+| Favour **Precision** when… | Favour **Recall** when… |
+|---------------------------|------------------------|
+| Users want to decide quickly | Users want to explore |
+| Cost of engaging with irrelevant item is high | Cost of missing a relevant item is high |
+| Missing a specific item is acceptable | Showing some irrelevant items is acceptable |
+
+> Precision vs recall is an **explicit design decision**, not just an algorithmic side effect.
+
+---
+
+### Exploitation vs Exploration
+
+| Mode | Description | Risk |
+|------|-------------|------|
+| **Exploitation** | Recommend more of what the user already likes | Filter bubble — user never discovers new things |
+| **Exploration** | Actively suggest new or unfamiliar content | Lower short-term relevance |
+
+**UI integration options:**
+
+| Approach | Example |
+|----------|---------|
+| **Integrated** | Exploration items appear the same as regular recommendations |
+| **Separate** | Dedicated "Discovery" mode or section (e.g. YouTube "New to you", Steam "Discovery queue") |
+| **Mixed** | Hints at exploration mixed within regular recommendations |
+
+> Study on physical activity apps: physically inactive users preferred exploration and gave higher ratings to novel activities. [Coppens et al., 2024]
+
+</details>
+
+<details><summary>Explaining recommendations — 5 типов объяснений + social signals</summary>
+
+| Explanation type | What it refers to | Example |
+|-----------------|-------------------|---------|
+| **Top item** | Most liked overall or in a category | "This is the most popular sports clip right now." |
+| **Top-N items** | Among the most liked | "This is in the top liked clips right now." |
+| **Similar to item** | Relates to another item the user liked | "Since you liked X, you might also like this." |
+| **Similar to users** | Relates to users with similar taste | "People like you liked this." / "Others who liked rock also liked this." |
+| **Score / rank** | Numerical or verbal score shown per item | 98% match, or "Very high / High / Medium / Low" |
+
+### Social signals
+
+| Type | Description |
+|------|-------------|
+| **Abstract link** | Mentions a common community aspect (e.g. average star rating) |
+| **Concrete link** | Mentions specific people (e.g. "Your friend Alice also liked this") |
+
+</details>
+
+<details><summary>Outlook — initiative, SwitchTube (control over control), forward vs backward reasoning</summary>
+
+### Who takes initiative?
+
+| Initiative | Example |
+|-----------|---------|
+| **User** | Browsing/searching on a dedicated recommendation website |
+| **System** | Auto-playing the next video without user action |
+| **Mixed** | Integrated recommendations in an app where users naturally want to browse more |
+
+---
+
+### Control over recommendations (SwitchTube)
+
+**Key idea:** Give users "control over control" — let them switch between different recommendation interface modes.
+
+> "Providing users with the ability to switch between interfaces gives a greater sense of agency, satisfaction, and goal alignment." [Lukoff et al., 2023]
+
+---
+
+### Forward vs backward reasoning
+
+| Reasoning | Description |
+|-----------|-------------|
+| **Backward** | Classic rec: "here are options, think about which fits" |
+| **Forward** | Help the user plan and reason toward a goal — not just options, but decision support |
+
+> Especially relevant in high-stakes contexts like pilot diversion decisions. [Zhang et al., 2024]
+
+</details>
+
+### Exam Questions
+
+> Explain the difference between content-based filtering and collaborative filtering. What is the key advantage of collaborative filtering?
+
+**A:** In **content-based filtering**, similarity is computed between a user's taste and item features — we need information about the content (e.g. book genre). In **collaborative filtering (CF)**, similarity is computed between users (user-based) or between items (item-based) based purely on ratings/likes — no content knowledge needed. Key advantage of CF: it works without any domain knowledge about the items themselves.
+
+> What is the cold-start problem? Describe three possible solutions.
+
+**A:** The cold-start problem refers to the difficulty of making accurate recommendations when there is insufficient data about a new user, new item, or new system. Solutions: (1) **Onboarding surveys** — ask new users to rate items or indicate interests on sign-up; (2) **Demographic / contextual info** — use metadata (age, location, device) to infer initial preferences; (3) **Hybrid approach** — start with content-based filtering, then shift to CF once enough interactions are collected.
+
+> Explain the tradeoff between precision and recall in recommendation systems and give an example of when you would favour each.
+
+> Name four UI design factors for recommendation systems and explain each with an example.
+
+> What is the difference between exploitation and exploration in recommendation systems? Give a UI example of how exploration can be supported.
+
+> Describe at least three UI-related aspects to consider for recommendations in interactive systems.
+
+**A:** **Feedback** — how users give feedback (e.g. like/dislike buttons, dismiss). **Explainability** — showing why an item was recommended builds trust ("Because you liked X"). **Onboarding** — collecting initial user interests to bootstrap recommendations. **Detail per item** — balance between too little (can't decide) and too much (overwhelming). **Quantity** — how many items to show at once.
+
+> Describe types of user feedback that an interactive recommendation system could integrate.
+
+**A:** **Explicit feedback** — direct actions like likes, dislikes, star ratings, or surveys. **Behavioural data** — implicit signals the system infers automatically: time spent on page, scroll depth, revisits. **Other interactions** — actions not intended as feedback but still usable: shares, bookmarks, comments.
+
+## 4.[Prompting](./lecture/iui_lecture_04_prompting.pdf)
+
+<details><summary>Новая парадигма — 3 эпохи взаимодействия (batch → interactive → intent-based), почему prompting exciting</summary>
+
+Three paradigm shifts in human-computer interaction:
+
+| Era | ~Year | Paradigm | Description |
+|-----|-------|----------|-------------|
+| **Batch** | ~1945 | Command batch | User specifies a complete workflow upfront; submitted to data center, processed overnight |
+| **Interactive** | ~1965 | Turn-based | User and computer take turns one command at a time; user can reassess and modify |
+| **Intent-based** | ~2023 | Prompting | User tells the computer what *outcome* they want, not *what to do* |
+
+**Why this is seen as exciting:**
+
+| Direction | Description |
+|-----------|-------------|
+| **Accessible, natural interaction** | People can interact in natural language, without technical training |
+| **Customisable, flexible features** | Users can prompt the functionality they individually need, even beyond what developers thought of |
+| **Computers finally "get it"** | Software "understands" content/meaning, not just file formats |
+
+</details>
+
+<details><summary>Типы промптов — zero/one/few-shot, diegetic vs non-diegetic, анатомия prompt-based interaction</summary>
+
+**Prompt (noun):** a text string (or other input like image, music) that initiates/guides AI output
+
+**Anatomy of prompt-based interaction:**
+1. User writes prompt
+2. AI processes prompt
+3. AI outputs response
+4. User (re)acts → UI design question: *how and "where" does this exchange take place?*
+
+---
+
+### Zero- / One- / Few-shot prompting
+
+| Type | Description | Example |
+|------|-------------|---------|
+| **Zero-shot** | Instruction only | "Translate this into German: …" |
+| **One-shot** | 1 example + instruction | One EN→DE example, then task |
+| **Few-shot** | >1 example + instruction | Two+ EN→DE examples, then task |
+
+→ More examples = more context = often better / more predictable output [Brown et al., 2020]
+
+---
+
+### Diegetic vs Non-diegetic prompting
+
+| Type | Description | Example |
+|------|-------------|---------|
+| **Diegetic** | Prompt is part of the created artefact | "Once upon a time, there was a fox…" — beginning becomes part of the final text |
+| **Non-diegetic** | Prompt is an instruction, not part of the artefact | "Write about the adventures of the fox" |
+
+[Dang et al., 2023]
+
+</details>
+
+<details><summary>Сложности для пользователей — open input, dynamic functionality, varied output, 4 поведенческих паттерна</summary>
+
+| Challenge | Description | Effect on user |
+|-----------|-------------|----------------|
+| **Open input possibilities** | Free text UIs don't impose structure or convention on input | Users are uncertain how to formulate input to get what they want |
+| **Dynamic functionality** | Functionality is dynamically provided by LLM, not predefined as buttons | Users are uncertain what the system can do |
+| **Varied output** | LLMs can generate varied and unexpected output | Users must provide guidance and evaluate output |
+
+### How users write prompts (key findings)
+
+| Behaviour | Issue |
+|-----------|-------|
+| Give instructions, underestimate examples | Examples can greatly improve results |
+| Generalise capabilities from only a few interactions | Overgeneralise what's possible or not |
+| Avoid repeating text | Repetition can be effective in longer prompts |
+| Prefer polite phrasing | Increases input effort without clear benefit |
+
+> **Key insight:** People approach prompting with intuitions from *talking to people* — especially in conversational UIs. [Zamfirescu-Pereira et al., CHI 2023]
+
+</details>
+
+<details><summary>Functional flexibility — function space metaphor, low vs high flexibility, shift ответственности на пользователя</summary>
+
+**Metaphor:** Imagine all possible functions (translate, summarize, write, etc.) as a "space".
+
+| UI type | Access to function space | How |
+|---------|--------------------------|-----|
+| **Classic GUI** (buttons, toolbars) | Specific references to fixed functions | Developer-determined, 1-to-1 mapping |
+| **Prompt-box UI** | Any function in the space | Depends entirely on user's prompt |
+| **Conversational UI** | Iterative "walking through" the space | Step-by-step refinement |
+
+### Functional flexibility as a design factor
+
+| Flexibility | Meaning | Example |
+|-------------|---------|---------|
+| **Low** | 1-to-1 mapping of UI element to function | "+" button = addition only |
+| **High** | 1-to-N mapping of UI element to function | One prompt box = translate / summarize / draft / … |
+
+> **Design principle:** Introducing open prompting in a UI *shifts responsibility* for finding useful functionality from designers/developers to end-users.
+
+**Design question:** What degree of functional flexibility is best for the target group and use case? A mix (buttons for common functions + prompt box for custom) is often optimal. [Lehmann & Buschek, 2024]
+
+</details>
+
+<details><summary>Metacognitive demands — 5 вопросов пользователя, 3 UI-подхода для поддержки метакогниции</summary>
+
+**Metacognition** = thinking about your own thinking — knowing what you know, monitoring your own process.
+
+Prompting-based UIs require users to bring **metacognitive skills**:
+
+| Question users must answer | Type |
+|---------------------------|------|
+| Should I use AI here? | Strategy |
+| For which part of the task? | Task decomposition |
+| How can I express what I want? | Prompt formulation |
+| Is this result good enough? | Self-evaluation |
+| How can I improve it? | Monitoring & control |
+
+[Tankelevitch et al., CHI 2024]
+
+### UI design to support metacognition
+
+| Approach | Example |
+|----------|---------|
+| **Task decomposition support** | System automatically breaks down the user's task into steps |
+| **Proactive sub-task prompting** | System suggests concrete examples for each sub-task |
+| **Self-evaluation support** | System notifies user when prompts are highly unspecified and suggests reflection |
+
+</details>
+
+<details><summary>Промпты в UI — 4 перспективы: input / output / functionality-provider / dev tool</summary>
+
+|  | Prompts as *means to an end* | Prompts as *subject* of interaction |
+|--|------------------------------|--------------------------------------|
+| **Users work with prompts** | Prompts as **input** (e.g. ChatGPT prompt box) | Prompts as **output / subject of work** (e.g. app to share/browse prompts) |
+| **Designers/Devs work with prompts** | Prompts as **functionality-provider** (e.g. "Translate" button backed by a hidden prompt) | Prompts as **development tool** (e.g. tools to analyse prompt-based systems during deployment) |
+
+</details>
+
+<details><summary>Designer perspective — "herding cats", prompt fickleness (individual / addition / no guardrails)</summary>
+
+> "Prompts made achieving '80%' UX goals easy, but not the remaining 20%. Fixing the few remaining interaction breakdowns resembled herding cats: we could not address one UX issue or test one design solution at a time; instead, we had to handle everything everywhere all at once."
+> [Zamfirescu-Pereira et al., DIS 2023]
+
+### Prompt "fickleness"
+
+| Issue | Description |
+|-------|-------------|
+| **Individual** | A prompt's effectiveness can highly depend on exact phrasing |
+| **Addition problem** | Combining two individually effective instructions can make both ineffective |
+| **No guardrails** | No prompt can reliably make an LLM say "I don't know" when it should |
+
+</details>
+
+<details><summary>UI-направления beyond chatbots — ChainForge, Luminate, Graphologue, DirectGPT, DynaVis, Composable Workspaces</summary>
+
+| System | Key idea | Challenge addressed |
+|--------|----------|---------------------|
+| **ChainForge** (Arawjo et al., 2024) | Visual toolkit for prompt engineering and LLM hypothesis testing | Better developer tooling for working with prompts |
+| **Luminate** (Suh et al., 2024) | Structured exploration of a "space of ideas" generated by prompting | Makes prompting feel less trial-and-error |
+| **Graphologue** (Jiang et al., 2023) | LLM responses visualised as interactive diagrams / mind maps | Avoids "walls of text"; enables information interaction |
+| **DirectGPT** (Masson et al., 2024) | Click on objects in the UI to insert them directly into a prompt | Combines direct manipulation with prompting |
+| **DynaVis** (Vaithilingam et al., 2025) | Prompts are synthesised into reusable graphical widgets in the UI | Users don't need to re-enter prompts for repeated use |
+| **Composable Workspaces** (Amin et al., 2025) | Users gradually build a personal workspace from prompt widgets | Supports iterative, multi-aspect creative writing |
+
+### Design directions summary
+
+- Developer UIs/tools for working with prompt-based systems
+- Better exploration of prompts and their outputs
+- Direct manipulation interaction with prompts
+- Combining graphical elements with prompts
+- Enabling users to work with prompts without re-typing
+- Representing prompts persistently in the UI as widgets
+
+</details>
+
+### Exam Questions
+
+> Describe the key difference between zero-shot, one-shot, and few-shot prompting and give an example of each.
+
+**A:** **Zero-shot** — instruction only, no examples ("Translate this into German: …"). **One-shot** — one input-output example + instruction. **Few-shot** — multiple examples + instruction; the model uses them as context to produce more predictable output. Impact if a system only works well with few-shot: users must provide examples every time they prompt → higher input effort, more cognitive load.
+
+> Explain the concept of "functional flexibility" as a UI design factor in prompt-based systems. What shift in responsibility does it introduce?
+
+> What are metacognitive demands in the context of prompting-based UIs? Give two concrete examples of questions users face.
+
+> Name three challenges users face when interacting with prompt-based systems and explain why they occur.
+
+> Explain the difference between diegetic and non-diegetic prompting with an example.
+
+> Describe a pain point of prompting UIs from your own experience and suggest a UI improvement.
+
+**A:** Example: **lack of memory continuity** — users must re-explain context at the start of every new session, which breaks workflow. Improvement: a persistent user profile panel where users store preferences, roles, and recurring context that is automatically included in every prompt. This can be seen as a **scrutable/editable user model**, or as **structured prompting** — splitting input into a regular prompt (instruction) and a persistent context panel.
+
+> Describe a potential prompt-based UI feature for existing software that doesn't use prompting yet.
+
+**A:** Example: **Spotify prompt playlist** — user types "play relaxing music for studying" and AI generates a personalised playlist. This works especially well because natural language vagueness matches the "vibe" nature of musical preferences — staying vague is a feature, not a bug, in this context.
+
+> Describe UI ideas for instructing a text-to-image generation system without entering text.
+
+**A:** (1) **Multi-aspect input** — split UI into separate controls for different aspects (style, mood, subject), some without text. (2) **Mind-map UI** — clicking a bubble decides one aspect of the image; new bubbles appear for sub-aspects; one bubble always stays empty for free input. (3) **Composer view** — drag & drop existing images to compose a new scene; generated output updates live next to the composed input.
+
+## 5.[Conversational UIs](./lecture/iui_lecture_05_conversational_UIs.pdf)
+
+<details><summary>Motivation & technologies — зачем CUI, pipeline (NLU → dialogue model → NLG), rule-based vs LLM</summary>
+
+**Why use conversational UIs?**
+
+- Feel natural — learned from human-to-human interaction
+- Support hands-free input (via voice)
+- Don't require a graphical display (via voice)
+- Keep context/history across the interaction
+- Can be "about" something (main task + conversation about it in parallel)
+- Accommodate negotiation and clarification
+- Go well with prompting (LLMs)
+- Communicate personality
+
+**Technologies involved:**
+
+```mermaid
+graph LR
+    A[User input] --> B[NLU]
+    B --> C[Dialogue model]
+    C --> D[NLG]
+    D --> E[System output]
+```
+
+**Technical approaches:**
+
+| Approach | Description | Example |
+|----------|-------------|---------|
+| **Rule-based** | Hand-authored replies using scripting language (e.g. AIML) | Kuki — 5× Loebner Prize winner; near-zero latency, resistant to toxicity |
+| **ML / LLM-based** | Prompting a large language model to generate responses | ChatGPT, most modern chatbots |
+
+> Rule-based still has advantages: predictable, zero latency, safe for production. ML/LLMs are more flexible but harder to control.
+
+---
+
+> **Exam Q:** Name and briefly describe three technical tasks / components required for interaction with a voice assistant.
+
+1. **Voice recognition / NLU** — converts spoken input into text and extracts the user's intent (what was said and what was meant)
+2. **Dialogue model** — manages conversation context, e.g. tracking what has already been said and handling contextual references
+3. **Voice synthesis / NLG** — generates a natural language response and converts it back to speech for the user
+
+</details>
+
+<details><summary>Design factors — modality (voice vs text), free text vs fixed options, output design (linguistic + paraverbal), дополнительные визуальные элементы</summary>
+
+### Modality: Speech/voice vs Text
+
+| | Speech / Voice | Text |
+|--|----------------|------|
+| ✅ | Hands-free (e.g. driving) | Integrates with GUI elements & visual content |
+| ✅ | Paraverbal cues (tone, intonation) | Status/progress easier to display |
+| ❌ | Status/progress hard to display | Requires screen |
+| ❌ | Time pressure on user | Requires text input method & visual attention |
+| ❌ | Unsuitable in noisy/social contexts | — |
+
+> Also possible: text input via speech + output via text → keeps visual requirements but frees hands.
+
+---
+
+### Text input: Free text vs Fixed options
+
+| | Free text | Fixed options |
+|--|-----------|---------------|
+| ✅ | Feels like a "real" conversation | Better control for designer/developer |
+| ✅ | High functional flexibility | Guides user, communicates functionality |
+| ✅ | Free user expression | Lower input effort |
+| ❌ | No guardrails; edge cases hard to handle | Feels less natural |
+| ❌ | Doesn't communicate limits of functionality | Limited scope — may miss user needs |
+
+---
+
+### Output design dimensions
+
+| Dimension | Examples |
+|-----------|----------|
+| **Linguistic** (words used) | Word choice, sentence length, formality level, slang, puns, irony, cultural proverbs |
+| **Paraverbal** (voice) | Prosody, tone, dialect, intonation, gender |
+
+> These shape the perceived *personality* of the chatbot — must fit the use-case and context.
+
+---
+
+### Additional visual elements (for screen-based CUIs)
+
+| Element | Role |
+|---------|------|
+| **Other GUI elements** | Status, progress bar, links, tables, images alongside chat |
+| **Surrounding presentation** | Avatar or "profile" for the chatbot — shapes expectations before first message |
+| **Physical device** | Device design, form factor, indicator lights |
+
+</details>
+
+<details><summary>Design guidelines — 5 практических правил</summary>
+
+| Guideline | Example |
+|-----------|---------|
+| **Tell users what they can do** | "You can ask for today's weather or a weekly forecast." |
+| **Tell users where they are** | "Today's forecast is sunny and dry" (not just "sunny and dry") |
+| **Prefer examples over instructions** | Use examples in the greeting or help feature |
+| **Limit information per turn** | Max 3 options — users must hold these in short-term memory |
+| **Use visual feedback if possible** | Indicator light on device; typing indicator in on-screen chatbot |
+
+</details>
+
+<details><summary>Conversation elements & breakdowns — 7 элементов диалогового флоу + 5 стратегий repair (Repeat / Give options / Confirm / Defer / Explain)</summary>
+
+### Conversation elements
+
+| Element | Purpose | Example |
+|---------|---------|---------|
+| **Start** | Establish relationship, provide orientation | "Hi, I'm your assistant. I can help with X or Y." |
+| **Suggestions** | Present options | "I can help you do X or Y." |
+| **User input** | Wait for and process user input | "Let me know what you'd like to do next." |
+| **Confirmation** | Confirm action, restate interpretation | "Ok, I'll book that for you now." |
+| **Progress indicator** | Show progress toward goal | "Almost there! To finish, I just need your phone number." |
+| **Error handling** | Acknowledge limits or breakdowns | "Sorry, I didn't understand. Could you rephrase?" |
+| **End** | Provide a clear closing | "All done! Have a great day. Goodbye." |
+
+> The "middle part" (suggestions → input → confirmation) is typically **repeated** for each step or piece of information needed.
+
+---
+
+### Breakdown repair strategies
+
+When the bot doesn't understand, it can use different strategies:
+
+| Strategy | Description | Example |
+|----------|-------------|---------|
+| **Repeat** | Ask the user to try again | "I don't quite understand. How can I help you today?" |
+| **Give options** | Present choices to clarify intent | "Which of these are you trying to do? 1) … 2) … 3) … 4) None" |
+| **Confirm** | Propose an interpretation | "Sounds like you want to add a card. Is that right?" |
+| **Defer** | Hand off to a human agent | "I'll refer you to a human agent who will respond shortly." |
+| **Explain** | Highlight the misunderstood part | "I've highlighted the part I can't process. Could you rephrase?" |
+
+> **Overall principle:** acknowledge breakdowns, assist user repair, proactively suggest solutions.
+> Note: "not understanding" is not the only breakdown — requests beyond scope or permissions also cause breakdowns.
+
+[Ashktorab et al., 2019]
+
+</details>
+
+<details><summary>Implementing CUIs — 3 подхода: hand-built flow, function calling, system prompt с плюсами/минусами</summary>
+
+### Option 1: Hand-built intent flow with prompting
+
+```
+User input
+    → Prompt for intent recognition (classify into A / B / C)
+        → Intent A → Prompt for output A → Response
+        → Intent B → Prompt for output B → Response
+        → Intent C → Prompt for output C → Response
+```
+
+- Explicit, predictable, testable one step at a time
+- Requires manual work for each intent and output
+
+### Option 2: LLM function calling
+
+- Describe what each function does in natural language
+- LLM decides itself when to call which function
+- The function itself can be anything (formula, API call, etc.)
+
+### Option 3: System prompt only
+
+```
+"You're a helpful assistant for scheduling appointments.
+Always be polite. Don't respond to questions beyond scheduling.
+Check the calendar tool before suggesting any slot. ..."
+```
+
+| Approach | Pros | Cons |
+|----------|------|------|
+| **Hand-built flow** | Predictable, testable, clear control | More manual work |
+| **System prompt** | Fast to prototype, flexible | "Herding cats" problem — hard to fix one issue at a time; can't force "I don't know" |
+
+> System prompts can quickly accumulate many "if X then Y" statements — just written in natural language rather than code. [Zamfirescu-Pereira et al., DIS 2023]
+
+</details>
+
+<details><summary>Personality & Media Equation — Big Five vs CA-модель, что и как проектировать</summary>
+
+### The Media Equation
+
+> People tend to assign human characteristics to media (incl. computers), treating them as **social actors**. [Reeves & Nass, 1996]
+
+**Examples:**
+- Giving a name to your vacuum cleaner or laptop
+- Saying "thank you" to a voice assistant
+- "My printer is having a bad day"
+- "Feeling" for ChatGPT when it expresses mood or opinions
+
+**Impact:** Even if you didn't design a personality, users *will* assign one — which shapes their expectations, attitudes, and behaviour.
+
+---
+
+### Personality models
+
+| Model | For | Dimensions |
+|-------|-----|------------|
+| **Big Five (OCEAN)** | Humans | Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism |
+| **CA personality model** | Conversational agents | 10 dimensions found via psycholexical approach (collect adjectives → rate CAs → factor analysis) [Völkel et al., 2020] |
+
+---
+
+### Designing personality
+
+**What to design:**
+
+| Layer | Examples |
+|-------|---------|
+| **Presentation** | Avatar, device form, surrounding visuals |
+| **Voice attributes** | Pitch, speed, dialect |
+| **What is said & how** | Word choice, sentence length, slang, formality, puns |
+| **Conversational structure** | Initiative, proactiveness, questions, clarifications |
+
+**How to design:**
+
+| Approach | Description |
+|----------|-------------|
+| **Top-down** | Based on concepts from literature (e.g. extraverted CA → talks faster, louder, more) |
+| **Bottom-up** | Based on user feedback; e.g. enactment-based design — ask actors to play conversations with a target personality |
+
+[Völkel et al., 2021]
+
+> **Recent example (CloChat):** Users are given UI controls to create/customize agent personality using Big Five dimensions. LLM first converts user-provided traits into a persona text, which is added to the prompt — the system writes its own prompt. [Ha et al., 2024]
+
+</details>
+
+<details><summary>Critical reflection — CUI ≠ настоящий разговор, голос ≠ без нагрузки, управление ожиданиями</summary>
+
+### Are CUIs really a "conversation"?
+
+> "We reject the notion that such devices and interfaces are conversational in nature […] It is hard to make a case based on our data that responses from the device have a similar status to the conversation into which they are embedded."
+> [Porcheron et al., 2018]
+
+- A true conversationalist can treat a statement as a question by choice. CUIs/CAs cannot do this naturally.
+- Interaction with a device *within* a conversation ≠ an actual conversation.
+
+---
+
+### Voice ≠ hands-free focus
+
+- Voice promises hands-free use but can **still shift focus** away from the main task
+- Bad error-handling forces cognitive attention ("come on, that's not what I wanted")
+- Demanding on cognitive resources in dual-task contexts (driving, cooking)
+
+> **Главная идея:** Голос = без рук, но не без мозга.
+>
+> Когда люди думают о голосовых интерфейсах, они предполагают: "я не трогаю экран, значит я не отвлекаюсь". Но мозг всё равно занят.
+>
+> **1. Плохая обработка ошибок** — если ассистент не понял, пользователь начинает думать: "почему он не понял? как перефразировать?" — внимание уходит с основной задачи на исправление ситуации.
+>
+> **2. Речь сама по себе требует ресурсов** — слушать ответ ассистента не пассивный процесс: мозг обрабатывает слова, держит контекст в памяти, формулирует следующую фразу. Именно поэтому разговор по телефону за рулём опасен даже без рук на трубке.
+>
+> **Итог:** voice = hands-free ✅, но voice ≠ mind-free ❌
+
+---
+
+### Managing user expectations
+
+| Risk | Guideline |
+|------|-----------|
+| Users overestimate machine intelligence (because they equate talking with thinking) | Make it explicitly clear it is not a human |
+| System misses user context | Don't assume full context understanding |
+| Users get lost | Limit scenarios; make options and suggestions easily available |
+
+</details>
+
+<details><summary>Outlook — chatbot with cursor, боты как исследовательский инструмент, open research directions</summary>
+
+### Chatbot with a cursor (Prasongpongchai et al., 2025)
+
+**Key idea:** With other people, we talk *about things in the world*. Can we bring spatial referencing to chatbots?
+- Chatbot has a cursor → can point to elements on screen
+- References in generated output are mapped to specific UI elements
+- Enables: "I'll move *this paragraph* here" rather than describing it in words
+
+---
+
+### Chatbots as research tools
+
+Using a chatbot as an **interviewer** instead of a static questionnaire:
+- Users in chatbot surveys produced more differentiated responses
+- Less "satisficing" (answering just to finish, not giving a true response)
+- Higher-quality data than web surveys [Kim et al., 2019]
+
+---
+
+### Open research directions [Clark et al., 2019]
+
+- Integration of prompting and CUIs into GUIs
+- Developing theories of speech interface interaction
+- Design methods and theories specific to speech context
+- Multi-user and multi-device speech interaction scenarios
+
+</details>
+
+### Exam Questions
+
+> List at least four benefits of conversational UIs and explain each briefly.
+
+> Compare free text input and fixed options in a conversational UI — what are the pros and cons of each?
+
+> Name and explain five typical elements of a conversation flow for a chatbot.
+
+> What is the "Media Equation" and why does it matter for the design of conversational agents?
+
+> Explain three breakdown repair strategies a chatbot can use when it doesn't understand the user.
+
+> What is the difference between top-down and bottom-up approaches to designing a conversational agent's personality?
