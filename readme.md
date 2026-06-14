@@ -927,7 +927,7 @@ Prompting-based UIs require users to bring **metacognitive skills**:
 
 **A:** (1) **Multi-aspect input** — split UI into separate controls for different aspects (style, mood, subject), some without text. (2) **Mind-map UI** — clicking a bubble decides one aspect of the image; new bubbles appear for sub-aspects; one bubble always stays empty for free input. (3) **Composer view** — drag & drop existing images to compose a new scene; generated output updates live next to the composed input.
 
-## 5.[Conversational UIs](./lecture/iui_lecture_05_conversational_UIs.pdf)
+## 5.[Conversational UI](./lecture/iui_lecture_05_conversational_UIs.pdf)
 
 <details><summary>Motivation & technologies — зачем CUI, pipeline (NLU → dialogue model → NLG), rule-based vs LLM</summary>
 
@@ -1238,3 +1238,111 @@ Using a chatbot as an **interviewer** instead of a static questionnaire:
 > Explain three breakdown repair strategies a chatbot can use when it doesn't understand the user.
 
 > What is the difference between top-down and bottom-up approaches to designing a conversational agent's personality?
+
+## 6.[Co-creative UI](./lecture/iui_lecture_06_cocreation.pdf)
+
+<details><summary>Recap & Last Quiz — Lecture 5 answers</summary>
+
+### Q1: Name and briefly describe three technical tasks/components required for interaction with a voice assistant.
+
+1. **Voice Recognition / NLU (Natural Language Understanding)** — converts spoken language into text and interprets the user's intent. *Example: "What's the weather tomorrow?" is recognised as a weather forecast request.*
+2. **Dialogue Model / Dialogue Management** — manages the flow and context of the conversation; keeps track of previous interactions and handles contextual references or follow-up questions. *Example: "What about Friday?" is understood as referring to the weather forecast mentioned before.*
+3. **Voice Synthesis / NLG (Natural Language Generation)** — generates a response and converts it into spoken audio. *Example: "Tomorrow will be sunny with 22 degrees."*
+
+---
+
+### Q2: Describe benefits and drawbacks of allowing free text input vs giving fixed input options in chatbots.
+
+**Benefits of free text input:**
+- Flexible and expressive — the user can ask anything in any way
+- More conversational and natural due to its open-ended nature
+
+**Drawbacks of free text input:**
+- Puts more burden on the system to understand intent
+- Users can get lost not knowing what to say
+- May give users the illusion that the system can solve anything
+- Harder to control for developers
+
+**Fixed input options:**
+- More predictable and easier to use, especially for first-time users
+- But they limit what the user can express and can feel restrictive for complex tasks
+
+---
+
+### Q3: Describe at least three possibilities for influencing the user's perception of the 'personality' of a voice assistant.
+
+1. **Voice characteristics** — different tone, pitch, speed, or accent
+2. **Language style** — formal, friendly, humorous, or professional wording
+3. **Response behavior** — polite greetings, jokes, empathy, or level of detail in answers
+4. **Visual appearance** — how the avatar or device presents itself
+
+---
+
+### Q4: Improve a photo editing software (e.g. Photoshop) by integrating a voice assistant — describe ideas and required technical capabilities.
+
+**Use cases:**
+- **Learning / feature discovery** — the agent listens to the user's request and responds with an LLM-based voice reply or highlights the relevant tool on screen (like a "laser pointer"). Requires access to the program structure.
+- **Faster execution** — user says "increase saturation by 20" or "make it brighter" instead of searching through menus. Useful because hands and eyes are busy on the image.
+- **Mixed initiative** — user gives a goal ("improve this photo") and the assistant suggests an action list: "Do you want better lighting, sharper details, or color correction?"
+- **Preview before apply** — assistant shows a preview of the change before executing it; reduces risk of unwanted edits.
+
+**Required technical capabilities:**
+- Integration with editing APIs
+- Understanding of visual elements and selected areas
+- Tracking of mouse pointer position for spatial reference
+- Mapping natural language to specific tool actions
+- Floating **voice indicator** in the GUI — shows what the system heard and what action it is about to take, keeping the user in control
+
+</details>
+
+### Learning Goals (Lecture 6)
+
+After this session, you should be able to:
+
+- **Describe** typical components/aspects of a generative system and how they might be considered when designing a UI for such a system
+- **Analyse** a UI / interaction design:
+  - By **applying** the discussed twelve principles of mixed-initiative interaction
+  - By **applying** the discussed "COFI" design dimensions
+  - By **applying** the discussed analysis framework for (turn-based) co-creation
+- **Explain a broader perspective** on interaction with generative systems (e.g. when designing such systems and/or as a user of related products), by thinking beyond the currently dominant "system-as-a-content-generator" role distribution
+
+### Exam Questions
+
+> Think about Horvitz's twelve principles in the context of the design of the word suggestion feature on your smartphone keyboard: To what extent are (some of) these principles realised? And could you use them to redesign or improve the word suggestion feature?
+
+Several principles are already realised:
+- The keyboard shows **3 suggestions at once** — this reflects "consider multiple interpretations" instead of forcing one guess
+- The user can tap a suggestion or just keep typing — easy **transition between user and machine control**
+- Suggestions appear without blocking typing — the user **stays in the flow**
+
+Principle is missing:
+- **Minimise costs of poor guesses** — if you accidentally tap the wrong suggestion, you have to manually delete it; there's no instant undo
+
+**Redesign idea for "Minimise costs of poor timing":**
+
+- **One-tap undo** — right after you accept a suggestion, show your original typed text as a single tap target in the suggestion bar. One tap to revert, no backspace needed.
+
+> Apply the framework by Guzdial & Riedl to examine the mood board system by Koch et al. (see lecture slides). That means, identify what user and/or AI can do for: Start, Artifact actions, Other actions, Non-turn actions, Turns, End. See the analysis of 'Scones' in the lecture as an example.
+
+- Start — only the user initiates
+
+- Artifact actions — the user adds/removes/moves items, the AI places its own images directly onto the board
+
+- Other actions — the user requests/rejects, the AI analyzes aesthetics
+
+- Non-turn actions — the AI monitors the board in the background
+
+- Turns — no strict alternation, both can act at any moment
+
+- End — only the user concludes
+
+In short: unlike Scones (strict turn-taking), a mood board is a **loosely turn-based system** where the AI acts more as a background assistant.
+
+> user-initiative vs. mixed-initiative vs. system-initiative + *one example* for each
+
+- **User-initiative** — the user drives all creative decisions; the system only executes what it's told *(Photoshop)*.
+- **Mixed-initiative** — both user and system can contribute and take turns leading *(keyboard word suggestions)*.
+- **System-initiative** — the system acts on its own and the user reacts to what it produces *(AI generates a image from a prompt)*.
+
+The key difference is **who decides what happens next**. More user-initiative = more control but more effort. More system-initiative = less effort but less control.
+
