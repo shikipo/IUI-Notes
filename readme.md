@@ -1346,3 +1346,187 @@ In short: unlike Scones (strict turn-taking), a mood board is a **loosely turn-b
 
 The key difference is **who decides what happens next**. More user-initiative = more control but more effort. More system-initiative = less effort but less control.
 
+## 7.[Text Entry](./lecture/iui_lecture_07_text_entry.pdf)
+
+<details><summary>Why text entry — motivation, inviscid entry rate, touch variance</summary>
+
+| Reason to study text entry | Detail |
+|---|---|
+| High practical relevance | Everyone types every day |
+| Challenging interaction | Fast loop; needs learning effort |
+| Technically challenging | Imprecise touches; vast search space of words/sentences |
+| Good "case study" | Clear boundaries, exemplar of sequential input |
+
+- **Inviscid entry rate** ≈ 67 WPM — the bottleneck-free rate, limited by *composing* text, not the UI [Kristensson & Vertanen, 2014]; real keyboards reach only ~40–45 WPM
+- **Touches are imprecise** due to parallax (eye–finger–screen offset) [Holz & Baudisch, 2011] and mobile conditions (1–2 fingers, small keys, movement)
+- Touch scatter around a key differs **between individuals** [Buschek et al., 2018] → basis for adaptation
+
+</details>
+
+<details><summary>Keyboard adaptation — Gaussian per-key model, Bayes' rule for a single keypress</summary>
+
+- Touches around a key are ~normally distributed [Wang & Ren, 2009] → model each key `k` as `p(t|k) = N(μ_k, σ_k²)`
+- We need the reverse → **Bayes' rule**: `k' = argmax_k ( p(t|k) · p(k) )`
+  - `p(t|k)` = touch model (per-key Gaussian) · `p(k)` = prior over keys (→ language model, see below)
+- **Adaptation** = re-estimate μ, σ per key from each user's own touches → reshapes (invisible) key hit-regions, e.g. SwiftKey
+
+| Motivations | Limitations |
+|---|---|
+| Individual touch behaviour differs (finger, posture, habits) | **Co-adaptation**: visible layout change → touch behaviour changes → feedback loop [Yin et al., 2013] → adapt only invisible hit-regions |
+| Reduces typos with no extra user effort | **Distortion**: unconstrained adaptation can make a key (almost) unreachable [Gunawardana et al., 2010] → needs a protected key region |
+| Touch data is cheap/passive to collect | Needs enough per-user data for stable Gaussians (cold start) |
+| Can adapt to context too — hand posture [Goel et al., 2013], walking [Goel et al., 2012] | Context sensing needs extra sensors, adds complexity |
+
+</details>
+
+<details><summary>Combining touch + language — uniform / unigram / bigram models</summary>
+
+| Option | Idea |
+|---|---|
+| **Uniform** | All keys equally likely: `p(k) = 1/N` |
+| **Unigram** | Overall character frequency, e.g. `p(k="e") = 0.174` (German) |
+| **Bigram (n-gram)** | `p(kᵢ\|kᵢ₋₁)` — e.g. "th" is likely in English |
+
+- With a bigram model, the **same touch decodes to different keys** depending on the previous character (e.g. "u" region grows after "q") → pixel-level shifts in hit-regions
+- Same idea applied to **words** instead of letters, no touch needed = **word suggestions**: `p(wₜ|wₜ₋ₙ...wₜ₋₁)`
+
+</details>
+
+<details><summary>Analysing a GUI probabilistically — general recipe</summary>
+
+1. Identify discrete **targets** (keys, icons, menu items…)
+2. Model the **noisy input signal** around each target as a distribution (e.g. Gaussian over touch/click/gaze)
+3. Define a **prior** over targets — uniform, frequency-based, or context-based ("language model" for that GUI)
+4. Apply **Bayes' rule**: `p(target|signal) ∝ p(signal|target)·p(target)` → `argmax`
+5. **Adapt**: update each target's distribution as more data arrives
+
+*Example:* crowded toolbar icons → Gaussian per icon + usage-frequency prior → small icons become more forgiving to imprecise clicks.
+
+</details>
+
+<details><summary>Decoding typing sequences — motivation, formal model</summary>
+
+- **Motivation:** key-by-key decoding only uses the current touch; looking at a whole word's touches at once resolves ambiguity (e.g. "In??rmatics" → "Informatics") — but requires correcting letters *after* they're typed → **auto-correction**
+- **Formal model:** intended sequence `s`, observed touches `o`: `s' = argmax_s ( p(o|s) · p(s) )`, with `p(o|s) = Π p(tᵢ|kᵢ)`
+  - `p(s)` = language model over sequences · `p(o|s)` = touch model over the whole sequence
+- Extreme case: decode a whole **sentence** at once, e.g. `"pleaseforwarxmetheatachement"` → `"Please forward me the attachement."` [Vertanen et al., 2015]
+
+</details>
+
+<details><summary>Token passing & beam pruning — worked toy example</summary>
+
+**Token passing:** at each touch, every surviving hypothesis ("token" = partial string + probability) branches into one new token per possible key.
+
+**Toy example — alphabet {a, b}, 2 touches:**
+
+| Step | Hyp | p | idx |
+|---|---|---|---|
+| 0 | "" | 1.0 | 0 |
+| 1 | "a" | 0.082 | 1 |
+| 1 | "b" | 0.015 | 1 |
+| 2 | "aa" | 0.002 | 2 |
+| 2 | "ab" | 0.009 | 2 |
+| 2 | "ba" | 0.0001 | 2 |
+| 2 | "bb" | 0.004 | 2 |
+
+**Beam pruning** (width 0.005, best = 0.009 → cutoff = 0.004):
+
+| Hyp (idx 2) | p | Kept? |
+|---|---|---|
+| "aa" | 0.002 | ✗ pruned |
+| "ab" | 0.009 | ✓ best |
+| "ba" | 0.0001 | ✗ pruned |
+| "bb" | 0.004 | ✓ kept (== cutoff) |
+
+→ Decoded result: **"ab"**. Without pruning, the search grows exponentially (substitution-only) or infinitely (with insertions); beam pruning keeps only tokens within the beam, so it stays tractable.
+
+- **Extensions:** add insertion (self-loop, extra letter) and deletion (`ε`-skip) edges with a probability penalty, to also correct extra/missing characters.
+
+</details>
+
+<details><summary>Gesture-based decoding & word prediction (without keypresses)</summary>
+
+| Approach | Idea | Formula |
+|---|---|---|
+| **Gesture typing** (SHARK², SwiftKey) | Infer word from finger-trace shape vs. stored templates + language model | `w' = argmax_w ( p(trace\|w) · p(w) )` |
+| **Word prediction** | Predict the next, not-yet-typed word from language context only | `p(wₜ\|wₜ₋ₙ...wₜ₋₁)` |
+
+</details>
+
+<details><summary>Summary — how adaptation, suggestions & auto-correction relate</summary>
+
+| Feature | Uses touch data? | When does it act? |
+|---|---|---|
+| **Keyboard adaptation** | Yes — per-user Gaussian per key | Live, character-by-character |
+| **Word suggestions** | No — language model only | Before the word is typed |
+| **Auto-correction** | Yes — touch + language | After a word/sentence is fully typed (sequence decoding) |
+
+→ Same touch-model + language-model + Bayes' rule; they differ only in *what* data is used and *when*.
+
+</details>
+
+### Exam Questions
+
+> Which user problems do adaptive and predictive keyboards address?
+
+- Your finger rarely lands exactly on a key (screen angle, tiny keys, shaky phone)
+- People hold/type differently (finger size, posture, walking)
+- A single tap between two keys is ambiguous on its own
+- Typing letter-by-letter is slower than people could physically type
+
+> Briefly explain (no equations) how touch information and language information can be combined for keyboard adaptation. What effect does this achieve at the pixel level?
+
+Touch info = **how close a touch** is to each key;  
+language info = **how likely each letter** is given what was typed before.  
+**Combining them** means picking the key that **wins on both closeness and likelihood**.  
+**Pixel-level effect**: invisible key **hit-regions shift** depending on context, without the visible layout changing (e.g. the "u" zone grows right after "q", then shrinks back).
+
+> Explain the motivations and limitations of keyboard adaptation.
+
+**A:** Motivated by individual differences in touch behaviour (personalised Gaussian per key beats one fixed layout); limited by co-adaptation risk and adaptation-vs-distortion. → see *"Keyboard adaptation — Gaussian per-key model..."* above.
+
+> Explain how keyboard adaptation, word suggestions, and auto-correction are conceptually related.
+
+**A:** Same touch-model + language-model + Bayes' rule, differing only in scope/timing (live single touch vs. whole sequence after typing vs. language-only). → see *"Summary — how adaptation, suggestions & auto-correction relate"* above.
+
+> Analyse a GUI to give ideas for how it could be modelled probabilistically.
+
+**A:** General recipe — targets → noise model around each → prior over targets → Bayes' rule → adapt over time. → see *"Analysing a GUI probabilistically — general recipe"* above.
+
+> Explain decoding of touch sequences with token passing (key steps). Also explain why beam pruning is helpful for practical use.
+
+**Key steps of token passing:**
+1. Start with one token: empty string, p = 1.0
+2. Each touch: every token branches into one new token per key, multiplying in touch- and language-likelihood
+3. End: the token with the highest probability is the decoded result
+
+**Why beam pruning helps:** branching grows exponentially per touch → without pruning, decoding gets too slow for real-time typing.
+
+> Explain beam pruning.
+
+**A:** Discards tokens outside a fixed margin ("beam width") of the current-best token at each step — keeps the otherwise exponential/infinite search tractable.
+
+> Conduct sequence decoding with token passing (sketch a simple example).
+
+**A:** See the worked 2-letter, 2-touch example above (*"Token passing & beam pruning — worked toy example"*) — branch, multiply probabilities, prune, decode `"ab"`.
+
+> Which (further) factors could be considered for adaptation and word prediction in keyboards?
+
+**For adaptation:** hand posture, motion/walking via accelerometer, device grip/orientation.
+
+**For word prediction:** app/context (formal vs. casual), recipient, time/location, personal vocabulary/history, conversation history, language switching.
+
+> **Your own exam question:** A user just typed "t" and touches between keys "g" and "h". Touch model: `p(t|g)=0.5`, `p(t|h)=0.4` (touch is slightly closer to "g"). Bigram language model after "t": `p(g)=0.05`, `p(h)=0.45` (since "th" is far more common than "tg"). Using `k' = argmax_k(p(t|k)·p(k))`, which key gets decoded — and why does this differ from picking by touch alone?
+
+**A:** By touch alone, "g" would win (0.5 > 0.4). Combined: `p(t|g)·p(g) = 0.5·0.05 = 0.025` vs. `p(t|h)·p(h) = 0.4·0.45 = 0.18`. Since 0.18 > 0.025, **"h" wins** — the strong language prior ("th" ≫ "tg") overrides the slightly-closer touch, correctly decoding "th" instead of "tg".
+
+> Are adaptive and predictive keyboards "deceptive"?
+
+**Arguments for "yes, somewhat deceptive":**
+- Adaptation runs invisibly in the **background** (users don't see that hit-regions have shifted)
+- **Auto-correction** sometimes silently changes already-typed text without explicit confirmation
+- Word suggestions create the illusion the keyboard "understands" the user, when it's really **just n-gram statistics**
+
+**Arguments for "no, not deceptive":**
+- The **goal is to compensate for noise** in the input channel (imprecise touch), not to change the user's intent
+- Most **decisions are reversible and visible** if you look (underlined auto-corrections)
