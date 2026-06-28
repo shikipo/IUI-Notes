@@ -1530,3 +1530,87 @@ language info = **how likely each letter** is given what was typed before.
 **Arguments for "no, not deceptive":**
 - The **goal is to compensate for noise** in the input channel (imprecise touch), not to change the user's intent
 - Most **decisions are reversible and visible** if you look (underlined auto-corrections)
+  
+## 8.[User Modelling & Adaptive UIs](./lecture/iui_lecture_08_adaptation.pdf)
+
+<details><summary>motivation of adaptive UIs</summary>
+
+Why:
+- Improve operational accuracy
+- Increase operational speed
+- Reduce operational learning
+
+What might we consider in a user model?
+- Interaction behaviour (e.g. speed, accuracy)
+- Preferences (e.g. content-related)
+- Skills/expertise (e.g. language proficiency)
+
+When to adapt?
+- Single action (e.g. one touch)
+- Many actions (e.g. typing behaviour)
+- Repeating patterns (e.g. chatting with a friend every day/weekend)
+</details>
+
+#### Case study 1: App prediction (Choices, Markov chain model/Modelling grid search)
+What app will the user open next? Can we predict it based on previous app usage?
+
+<details><summary>Markov chain model</summary>
+
+<img src="./img/markov1.png" width="800" />
+<img src="./img/markov2.png" width="800" />
+<img src="./img/markov3.png" width="800" />
+<img src="./img/markov4.png" width="800" />
+
+Result of MCM **help us to predict the next app** based on the previous app usage:  
+<img src="./img/markov5.png" width="800" />
+
+The model **can be extended** by considering **time of day** (day vs. night). Based on the previous app usage and the time of day, we can predict the next app usage:
+<img src="./img/markov6.png" width="800" />
+
+</details>
+
+<details><summary>Modelling grid search/selection</summary>
+
+<img src="./img/modelling_grid.png" width="800" />
+
+Predicts the time to find and select an app in a grid layout:
+
+**Ti = Tnav + Tvs + Tpoint**
+
+- **Tnav** — scrolling time (if app is outside visible area)
+- **Tvs** — visual search time (linear scan)
+- **Tpoint** — tap time (based on Fitts' Law)
+
+**Application:** used to decide which apps to show as shortcuts in the top recommendation bar — apps with the highest Ti (longest to find in the grid) are prioritized.
+</details>
+
+#### Case study 2: Fitts’ Law (Time)
+How long does it take to select an item?
+
+<details><summary>Fitts’ Law</summary>
+
+is a **model** of human movement (depeding on distance and size of the target) that **predicts the time required to move to a target area**.
+
+**Trends:**
+- Larger target → faster
+- Longer distance → slower
+
+**Formel:**
+```
+Movement Time = a + b * log2(2D/W)
+```
+D - distance to target (cm)  
+W - size of target (cm)
+a, b - constants (sec)
+
+</details>
+
+#### Case study 2: Touch offsets (Space)
+How do users touch a target on a touchscreen? How can we improve accuracy?
+
+<details><summary>Touch offsets</summary>
+
+<img src="./img/touch1.png" width="800" />
+<img src="./img/touch2.png" width="800" />
+
+</details>
