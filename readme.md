@@ -1600,7 +1600,7 @@ is a **model** of human movement (depeding on distance and size of the target) t
 Movement Time = a + b * log2(2D/W)
 ```
 D - distance to target (cm)  
-W - size of target (cm)
+W - size of target (cm)  
 a, b - constants (sec)
 
 </details>
@@ -1612,5 +1612,33 @@ How do users touch a target on a touchscreen? How can we improve accuracy?
 
 <img src="./img/touch1.png" width="800" />
 <img src="./img/touch2.png" width="800" />
+
+</details>
+
+## 9.[Optimization](./lecture/iui_lecture_09_optimization.pdf)
+
+<details><summary>Idea and motivation of using optimisation</summary>
+
+- **Design space**: all possible UI designs (e.g., 26! possible key layouts)
+- **Objective function**: a formula scoring the quality of a design (e.g. Fitts' Law)
+- **Optimizer**: the algorithm that searches the design space for the best design (Simulated Annealing, Integer Programming, etc.)
+
+</details>
+
+<details><summary>Optimizer</summary>
+
+**Path**:
+1. Generate random design
+2. Evaluate
+3. Keep it if its better than the previous best design
+4. Repeat
+
+**Methods**:
+- **Heuristic methods** (e.g. simulated annealing): flexible, but may not find the best solution
+- **Exact methods** (e.g. integer programming): guaranteed to find the best solution, but may be slow for large design spaces
+
+**Reflection and limitations**:
+- Building the right thing or building the thing right?
+- No single best design for all users
 
 </details>
